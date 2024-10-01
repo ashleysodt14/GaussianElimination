@@ -108,7 +108,7 @@ def plu_c(A):
     n = len(A)
     
     # Load the shared C library (adjust the path as necessary)
-    lib = ctypes.CDLL(gauss_library_path)
+    lib = ctypes.CDLL("./gauss_solve.so")
 
     # Convert Python lists to C-compatible data structures
     A_c = (ctypes.POINTER(ctypes.c_double) * n)()
