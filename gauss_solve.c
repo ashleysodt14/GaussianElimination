@@ -75,16 +75,28 @@ void lu_in_place_reconstruct(int n, double A[n][n])
 #include <stdbool.h>
 
 #include <math.h>
+#include <stdio.h>
+
+void swap_rows(double A[], int n, int row1, int row2) {
+    for (int i = 0; i < n; i++) {
+        double temp = A[row1 * n + i];
+        A[row1 * n + i] = A[row2 * n + i];
+        A[row2 * n + i] = temp;
+    }
+}
 
 void plu(int n, double A[n][n], int P[n]) {
-    // Initialize the permutation array P to identity
+    // Step 1: Initialize permutation vector P to identity
     for (int i = 0; i < n; i++) {
         P[i] = i;
     }
 
+    // Step 2: Initialize L as a zero matrix (implicitly)
+    // Step 3: Initialize U to matrix A (already done as we modify A directly)
+
     // PLU decomposition
     for (int k = 0; k < n - 1; k++) {
-        // Find the pivot element (max in column k starting from row k)
+        // Step 5: Find the pivot element
         int pivot_row = k;
         double max_val = fabs(A[k][k]);
         for (int i = k + 1; i < n; i++) {
@@ -94,29 +106,40 @@ void plu(int n, double A[n][n], int P[n]) {
             }
         }
 
-        // If pivot_row != k, we swap rows k and pivot_row in A and update P
+        // Step 6: Swap rows k and pivot_row in U (A)
         if (pivot_row != k) {
-            // Swap rows in A
-            for (int j = 0; j < n; j++) {
-                double temp = A[k][j];
-                A[k][j] = A[pivot_row][j];
-                A[pivot_row][j] = temp;
-            }
-            // Swap entries in permutation vector P
+            // Swap rows in A (U matrix)
+            swap_rows(&A[0][0], n, k, pivot_row);
+
+            // Step 7: Swap rows k and pivot_row in P
             int temp = P[k];
             P[k] = P[pivot_row];
             P[pivot_row] = temp;
+
+            // Step 8: Swap rows k and pivot_row in L (only columns 1 to k-1)
+            for (int j = 0; j < k; j++) {
+                double temp_L = A[k][j];
+                A[k][j] = A[pivot_row][j];
+                A[pivot_row][j] = temp_L;
+            }
         }
 
-        // Perform elimination below the diagonal in column k
+        // Step 9: Perform elimination below the pivot in column k
         for (int i = k + 1; i < n; i++) {
-            // Compute the multiplier for L
-            A[i][k] /= A[k][k]; // L(i,k) = A(i,k)/A(k,k)
+            // Step 10: Compute the multiplier
+            A[i][k] /= A[k][k];  // L[i,k] = A[i,k] / A[k,k]
 
-            // Update the rows of U
+            // Step 12: Update the matrix U
             for (int j = k + 1; j < n; j++) {
-                A[i][j] -= A[i][k] * A[k][j]; // U(i,j) = U(i,j) - L(i,k) * U(k,j)
+                A[i][j] -= A[i][k] * A[k][j];
             }
         }
     }
+
+    // Step 16: Set the diagonal elements of L to 1
+    for (int i = 0; i < n; i++) {
+        A[i][i] = 1.0;  // L diagonal elements set to 1
+    }
+
+    // No need to return matrices since A is modified in place
 }
