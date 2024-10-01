@@ -98,7 +98,7 @@ def plu_python(A):
 
         # Eliminate below the pivot
         for i in range(k + 1, n):
-            L[i][k] = U[i][k] / U[k][k]
+            L[i][k] = U[i][k] / U[k][k]  # Store the multiplier in L
             for j in range(k, n):
                 U[i][j] -= L[i][k] * U[k][j]
 
