@@ -108,8 +108,6 @@ def plu_python(A):
 
     return P, L, U
 
-import ctypes
-
 def plu_c(A):
     """PA=LU decomposition using the C implementation."""
     n = len(A)
