@@ -140,15 +140,7 @@ def plu_c(A):
         for i in range(n)
     ]
 
-    # Initialize L matrix
-    L = [[0.0] * n for _ in range(n)]
-    for i in range(n):
-        L[i][i] = 1.0  # Set diagonal to 1
-        for j in range(i):
-            L[i][j] = modified_array_2d[i][j]
-
-    # Create U matrix from the modified 2D array
-    U = modified_array_2d
+    L, U = unpack(A)
 
     # Convert permutation array to Python list
     P = [P_c[i] for i in range(n)]
