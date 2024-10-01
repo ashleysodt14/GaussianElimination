@@ -103,33 +103,52 @@ def plu_python(A):
 
     return P, L, U
 
+import ctypes
+
 def plu_c(A):
-    """PA=LU decomposition using the C implementation."""
-    n = len(A)
+    """PA=LU decomposition using the C implementation.
     
-    # Load the shared C library (adjust the path as necessary)
+    Accepts a list of lists A of floats and returns the permutation matrix P,
+    and the L and U matrices as tuples.
+    """
+    # Load the shared library
     lib = ctypes.CDLL(gauss_library_path)
 
-    # Convert Python lists to C-compatible data structures
-    A_c = (ctypes.POINTER(ctypes.c_double) * n)()
-    for i in range(n):
-        A_c[i] = (ctypes.c_double * n)(*A[i])
+    n = len(A)
+    
+    # Create a flat array from the 2D list A
+    flat_array_2d = [item for row in A for item in row]
 
+    # Convert to a ctypes array
+    c_array_2d = (ctypes.c_double * len(flat_array_2d))(*flat_array_2d)
+    
+    # Prepare the permutation array
     P_c = (ctypes.c_int * n)()
 
-    # Call the C function
-    lib.plu(ctypes.c_int(n), A_c, P_c)
+    # Define the function signature
+    lib.plu.argtypes = (ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int))
 
-    # Extract the results back to Python lists
-    P = [P_c[i] for i in range(n)]
+    # Call the C function to perform the PA=LU decomposition
+    lib.plu(n, c_array_2d, P_c)
+
+    # Convert the modified 1D ctypes array back to a 2D Python list
+    modified_array_2d = [
+        [c_array_2d[i * n + j] for j in range(n)]
+        for i in range(n)
+    ]
+
+    # Initialize L matrix
     L = [[0.0] * n for _ in range(n)]
-    U = [[A_c[i][j] for j in range(n)] for i in range(n)]
-    
-    # Construct L (since C stores L's multipliers directly in A)
     for i in range(n):
-        L[i][i] = 1.0
+        L[i][i] = 1.0  # Set diagonal to 1
         for j in range(i):
-            L[i][j] = A_c[i][j]
+            L[i][j] = modified_array_2d[i][j]
+
+    # Create U matrix from the modified 2D array
+    U = modified_array_2d
+
+    # Convert permutation array to Python list
+    P = [P_c[i] for i in range(n)]
 
     return P, L, U
 
