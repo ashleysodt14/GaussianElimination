@@ -109,7 +109,7 @@ def plu_c(A):
     n = len(A)
     
     # Load the shared C library (adjust the path as necessary)
-    lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), 'plu_decomposition.so'))
+    lib = ctypes.CDLL(gauss_library_path)
 
     # Convert Python lists to C-compatible data structures
     A_c = (ctypes.POINTER(ctypes.c_double) * n)()
