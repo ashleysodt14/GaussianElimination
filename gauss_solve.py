@@ -86,10 +86,15 @@ def plu_python(A):
         if U[pivot_row][k] == 0:
             raise ValueError("Matrix is singular and cannot be decomposed.")
 
-        # Swap rows in U and P
+        # Swap rows in U, P, and L (only columns 1 to k - 1)
         if pivot_row != k:
+            # Swap rows in U
             U[k], U[pivot_row] = U[pivot_row], U[k]
+            # Swap entries in permutation vector P
             P[k], P[pivot_row] = P[pivot_row], P[k]
+            # Swap rows in L (only columns 0 to k - 1)
+            for j in range(k):
+                L[k][j], L[pivot_row][j] = L[pivot_row][j], L[k][j]
 
         # Eliminate below the pivot
         for i in range(k + 1, n):
