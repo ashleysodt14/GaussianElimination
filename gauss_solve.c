@@ -74,6 +74,8 @@ void lu_in_place_reconstruct(int n, double A[n][n])
 #include <math.h>
 #include <stdbool.h>
 
+#include <math.h>
+
 void plu(int n, double A[n][n], int P[n]) {
     // Initialize the permutation array P to identity
     for (int i = 0; i < n; i++) {
@@ -116,10 +118,5 @@ void plu(int n, double A[n][n], int P[n]) {
                 A[i][j] -= A[i][k] * A[k][j]; // U(i,j) = U(i,j) - L(i,k) * U(k,j)
             }
         }
-    }
-
-    // Fill L's diagonal with 1's
-    for (int i = 0; i < n; i++) {
-        A[i][i] = 1.0;  // Set the diagonal of L to 1
     }
 }
