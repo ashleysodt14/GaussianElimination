@@ -8,6 +8,8 @@
 *
 *----------------------------------------------------------------*/
 #include "gauss_solve.h"
+#include <stdio.h>
+#include <math.h>
 
 void gauss_solve_in_place(const int n, double A[n][n], double b[n])
 {
@@ -65,4 +67,47 @@ void lu_in_place_reconstruct(int n, double A[n][n])
       }
     }
   }
+}
+
+void plu(int n, double A[n][n], int P[n]) {
+    // Initialize the permutation array P to identity
+    for (int i = 0; i < n; i++) {
+        P[i] = i;
+    }
+
+    // PLU decomposition
+    for (int k = 0; k < n - 1; k++) {
+        // Find the pivot element (max in column k starting from row k)
+        int pivot_row = k;
+        double max_val = fabs(A[k][k]);
+        for (int i = k + 1; i < n; i++) {
+            if (fabs(A[i][k]) > max_val) {
+                max_val = fabs(A[i][k]);
+                pivot_row = i;
+            }
+        }
+
+        // If pivot_row != k, we swap rows k and pivot_row in A and update P
+        if (pivot_row != k) {
+            // Swap rows in A
+            for (int j = 0; j < n; j++) {
+                double temp = A[k][j];
+                A[k][j] = A[pivot_row][j];
+                A[pivot_row][j] = temp;
+            }
+            // Swap entries in permutation vector P
+            int temp = P[k];
+            P[k] = P[pivot_row];
+            P[pivot_row] = temp;
+        }
+
+        // Perform elimination below the diagonal in column k
+        for (int i = k + 1; i < n; i++) {
+            A[i][k] /= A[k][k]; // L(i,k) = A(i,k)/A(k,k)
+
+            for (int j = k + 1; j < n; j++) {
+                A[i][j] -= A[i][k] * A[k][j]; // Update U(i,j)
+            }
+        }
+    }
 }
