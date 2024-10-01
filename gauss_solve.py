@@ -10,8 +10,10 @@
 # A Python wrapper module around the C library libgauss.so
 
 import ctypes
+import os
 
-gauss_library_path = './libgauss.so'
+# Adjust this to the actual path where libgauss.so is located
+gauss_library_path = os.path.abspath("./libgauss.so")
 
 def unpack(A):
     """ Extract L and U parts from A, fill with 0's and 1's """
