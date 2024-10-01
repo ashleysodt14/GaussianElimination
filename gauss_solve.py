@@ -10,7 +10,6 @@
 # A Python wrapper module around the C library libgauss.so
 
 import ctypes
-import os
 
 gauss_library_path = './libgauss.so'
 
