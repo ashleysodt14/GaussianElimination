@@ -69,6 +69,8 @@ void lu_in_place_reconstruct(int n, double A[n][n])
   }
 }
 
+#include <math.h>
+
 void plu(int n, double A[n][n], int P[n]) {
     // Initialize the permutation array P to identity
     for (int i = 0; i < n; i++) {
@@ -99,6 +101,13 @@ void plu(int n, double A[n][n], int P[n]) {
             int temp = P[k];
             P[k] = P[pivot_row];
             P[pivot_row] = temp;
+
+            // Swap rows in L (only columns 0 to k - 1)
+            for (int j = 0; j < k; j++) {
+                double temp_L = A[k][j];
+                A[k][j] = A[pivot_row][j];
+                A[pivot_row][j] = temp_L;
+            }
         }
 
         // Perform elimination below the diagonal in column k
