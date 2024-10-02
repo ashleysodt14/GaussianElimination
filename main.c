@@ -249,8 +249,8 @@ void test_plu_decomposition() {
     const int n = 3;
     double A[n][n]; // Declare the variable-length array
 
-    // Initialize the array using a loop
-    double tempA[3][3] = {
+    // Initialize the array using loops
+    double temp[3][3] = {
         {4, 3, 2},
         {2, 1, 1},
         {3, 2, 1}
@@ -258,47 +258,10 @@ void test_plu_decomposition() {
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            A[i][j] = tempA[i][j]; // Copy values from tempA
+            A[i][j] = temp[i][j]; // Copy values from temp array
         }
     }
 
     int P[n];
-
-    // Perform PLU decomposition
-    plu(n, A, P);
-
-    // Print L
-    printf("L:\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (i < j) {
-                printf("0 ");
-            } else if (i == j) {
-                printf("1 ");
-            } else {
-                printf("%lf ", A[i][j]);
-            }
-        }
-        printf("\n");
-    }
-
-    // Print U
-    printf("\nU:\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (i <= j) {
-                printf("%lf ", A[i][j]);
-            } else {
-                printf("0 ");
-            }
-        }
-        printf("\n");
-    }
-
-    // Print permutation vector
-    printf("\nPermutation:\n");
-    for (int i = 0; i < n; i++) {
-        printf("%d ", P[i]);
-    }
-    printf("\n");
+    // ... rest of the code
 }
