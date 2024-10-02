@@ -247,11 +247,21 @@ void test_plu_decomposition() {
     printf("Entering function: %s\n", __func__);
     
     const int n = 3;
-    double A[n][n] = {
+    double A[n][n]; // Declare the variable-length array
+
+    // Initialize the array using a loop
+    double tempA[3][3] = {
         {4, 3, 2},
         {2, 1, 1},
         {3, 2, 1}
     };
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            A[i][j] = tempA[i][j]; // Copy values from tempA
+        }
+    }
+
     int P[n];
 
     // Perform PLU decomposition
