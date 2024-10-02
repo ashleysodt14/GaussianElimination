@@ -4,10 +4,7 @@
 void gauss_solve_in_place(const int n, double A[n][n], double b[n]);
 void lu_in_place(const int n, double A[n][n]);
 void lu_in_place_reconstruct(int n, double A[n][n]);
-void plu(int n, double A[n][n], int P[n]);  // Add this line
-
-#endif // GAUSS_SOLVE_H
-
+void plu(int n, double A[n][n], int P[n]);
 
 /* An idiomatic way to swap two l-values X and Y of type TYPE in C
    Example:
@@ -20,9 +17,4 @@ void plu(int n, double A[n][n], int P[n]);  // Add this line
     (Y) = tmp;					\
   } while(0)
 
-
-void gauss_solve_in_place(const int n, double A[n][n], double b[n]);
-void lu_in_place(const int n, double A[n][n]);
-void lu_in_place_reconstruct(int n, double A[n][n]);
-
-#endif
+#endif // GAUSS_SOLVE_H
