@@ -91,9 +91,9 @@ void plu(int n, double A[n][n], int P[n]) {
         P[i] = i;
     }
 
-    // PLU decomposition
+    // Step 2: PLU decomposition
     for (int k = 0; k < n - 1; k++) {
-        // Step 2: Find the pivot element
+        // Step 3: Find the pivot element (maximum in column k)
         int pivot_row = k;
         double max_val = fabs(A[k][k]);
         for (int i = k + 1; i < n; i++) {
@@ -103,35 +103,26 @@ void plu(int n, double A[n][n], int P[n]) {
             }
         }
 
-        // Step 3: Swap rows in A (U matrix)
+        // Step 4: Swap rows if necessary
         if (pivot_row != k) {
-            swap_rows(&A[0][0], n, k, pivot_row);
+            // Swap rows in A (U matrix)
+            swap_rows(A, n, k, pivot_row);
 
-            // Step 4: Swap rows in P
+            // Swap rows in P
             int temp = P[k];
             P[k] = P[pivot_row];
             P[pivot_row] = temp;
-
-            // Step 5: Swap rows in L (lower part of A, before the diagonal)
-            for (int j = 0; j < k; j++) {
-                double temp_L = A[k][j];
-                A[k][j] = A[pivot_row][j];
-                A[pivot_row][j] = temp_L;
-            }
         }
 
-        // Step 6: Eliminate below the pivot in column k
+        // Step 5: Perform elimination to form L and U
         for (int i = k + 1; i < n; i++) {
-            // Compute the multiplier (stored in L)
-            A[i][k] /= A[k][k];
+            A[i][k] /= A[k][k];  // Store L(i,k) in the lower part of A
 
-            // Update U matrix (the upper part of A)
             for (int j = k + 1; j < n; j++) {
-                A[i][j] -= A[i][k] * A[k][j];
+                A[i][j] -= A[i][k] * A[k][j];  // Update U matrix
             }
         }
     }
 
-    // Note: L is stored in the lower part of A (below the diagonal),
-    // U is stored in the upper part of A (including the diagonal).
+    // After the loop, A contains L (lower part, with 1 on diagonal) and U (upper part)
 }
