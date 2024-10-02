@@ -162,11 +162,10 @@ def plu(A, use_c=False):
     P, L, U : lists
         Permutation list, lower triangular matrix L, upper triangular matrix U.
     """
-    # if use_c:
-    #     return plu_c(A)
-    # else:
-    #     return plu_python(A)
-    return plu_python(A)
+    if use_c:
+        return plu_c(A)
+    else:
+        return plu_python(A)
 
 
 if __name__ == "__main__":
