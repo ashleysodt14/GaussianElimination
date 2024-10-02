@@ -199,30 +199,15 @@ void fpe_handler(int sig) {
   }
 }
 
-int main()
-{
-  // Enable trapping for specific floating-point exceptions
-  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-  sighandler_t old_handler = signal(SIGFPE, fpe_handler);
-
-  test_gauss_solve();
-  test_lu_in_place();
-  benchmark_test(5);
-  benchmark_test_dynamic(5);
-  benchmark_test_dynamic_alt(2000);
-  test_gauss_solve_with_zero_pivot();  
-  exit(EXIT_SUCCESS);
-}
-#include <stdio.h>
-#include "gauss_solve.h"
-
 int main() {
     int n = 3;
-    double A[3][3] = {
-        {4, 3, 2},
-        {2, 1, 1},
-        {3, 2, 1}
-    };
+    double A[n][n]; // Declare the variable-length array
+// Initialize it manually
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+        A[i][j] = /* your value here */;
+    }
+}
     int P[3];
 
     plu(n, A, P);
