@@ -117,35 +117,35 @@ def plu_c(A):
     # Load the shared library
     lib = ctypes.CDLL(gauss_library_path)
 
+    # Create a 2D array in Python and flatten it
     n = len(A)
-    
-    # Create a flat array from the 2D list A
     flat_array_2d = [item for row in A for item in row]
 
-    # Convert to a ctypes array
-    c_array_2d = (ctypes.c_double * len(flat_array_2d))(*flat_array_2d)
-    
-    # Prepare the permutation array
-    P_c = (ctypes.c_int * n)()
+    # Create the identity permutation array P as a 1D array
+    P_array = [i for i in range(n)]
 
-    # Define the function signature
+    # Convert to ctypes array
+    c_array_2d = (ctypes.c_double * len(flat_array_2d))(*flat_array_2d)
+    c_P_array = (ctypes.c_int * n)(*P_array)
+
+    # Define the function signature (accepting n, A, and P)
     lib.plu.argtypes = (ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int))
 
-    # Call the C function to perform the PA=LU decomposition
-    lib.plu(n, c_array_2d, P_c)
+    # Call the C function (pass n, A, and P)
+    lib.plu(n, c_array_2d, c_P_array)
 
-    # Convert the modified 1D ctypes array back to a 2D Python list
+    # Convert back to a 2D Python list of lists
     modified_array_2d = [
         [c_array_2d[i * n + j] for j in range(n)]
         for i in range(n)
     ]
+    L,U = unpack(modified_array_2d)
+    # Convert the 1D permutation array back to a permutation matrix
+    permutation_matrix = [[1 if c_P_array[i] == j else 0 for j in range(n)] for i in range(n)]
+    permutation_vector = [list(row).index(1) for row in permutation_matrix]
+    # Extract L and U parts from A, fill with 0's and 1's
+    return permutation_vector, L, U
 
-    L, U = unpack(A)
-
-    # Convert permutation array to Python list
-    P = [P_c[i] for i in range(n)]
-
-    return P, L, U
 
 
 def plu(A, use_c=False):
