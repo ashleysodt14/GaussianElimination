@@ -262,3 +262,52 @@ int main() {
 
     return 0;
 }
+void test_plu_decomposition() {
+    printf("Entering function: %s\n", __func__);
+    
+    const int n = 3;
+    double A[n][n] = {
+        {4, 3, 2},
+        {2, 1, 1},
+        {3, 2, 1}
+    };
+    int P[n];
+
+    // Perform PLU decomposition
+    plu(n, A, P);
+
+    // Print L
+    printf("L:\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i < j) {
+                printf("0 ");
+            } else if (i == j) {
+                printf("1 ");
+            } else {
+                printf("%lf ", A[i][j]);
+            }
+        }
+        printf("\n");
+    }
+
+    // Print U
+    printf("\nU:\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i <= j) {
+                printf("%lf ", A[i][j]);
+            } else {
+                printf("0 ");
+            }
+        }
+        printf("\n");
+    }
+
+    // Print permutation vector
+    printf("\nPermutation:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", P[i]);
+    }
+    printf("\n");
+}
