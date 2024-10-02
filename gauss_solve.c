@@ -77,13 +77,15 @@ void lu_in_place_reconstruct(int n, double A[n][n])
 #include <math.h>
 #include <stdio.h>
 
-void swap_rows(double A[], int n, int row1, int row2) {
-    for (int i = 0; i < n; i++) {
-        double temp = A[row1 * n + i];
-        A[row1 * n + i] = A[row2 * n + i];
-        A[row2 * n + i] = temp;
+// Correct swap_rows function signature
+void swap_rows(double A[][n], int n, int row1, int row2) {
+    for (int j = 0; j < n; j++) {
+        double temp = A[row1][j];
+        A[row1][j] = A[row2][j];
+        A[row2][j] = temp;
     }
 }
+
 
 void plu(int n, double A[n][n], int P[n]) {
     // Step 1: Initialize permutation vector P to identity
