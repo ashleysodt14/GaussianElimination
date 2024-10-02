@@ -224,3 +224,52 @@ int main()
   test_gauss_solve_with_zero_pivot();  
   exit(EXIT_SUCCESS);
 }
+#include <stdio.h>
+#include "gauss_solve.h"
+
+int main() {
+    int n = 3;
+    double A[3][3] = {
+        {4, 3, 2},
+        {2, 1, 1},
+        {3, 2, 1}
+    };
+    int P[3];
+
+    plu(n, A, P);
+
+    printf("PLU Decomposition:\n");
+    printf("L:\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i < j) {
+                printf("0 ");
+            } else if (i == j) {
+                printf("1 ");
+            } else {
+                printf("%lf ", A[i][j]);
+            }
+        }
+        printf("\n");
+    }
+
+    printf("\nU:\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i <= j) {
+                printf("%lf ", A[i][j]);
+            } else {
+                printf("0 ");
+            }
+        }
+        printf("\n");
+    }
+
+    printf("\nPermutation:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", P[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
