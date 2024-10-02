@@ -1,14 +1,3 @@
-#----------------------------------------------------------------
-# File:     gauss_solve.py
-#----------------------------------------------------------------
-#
-# Author:   Marek Rychlik (rychlik@arizona.edu)
-# Date:     Thu Sep 26 10:38:32 2024
-# Copying:  (C) Marek Rychlik, 2020. All rights reserved.
-# 
-#----------------------------------------------------------------
-# A Python wrapper module around the C library libgauss.so
-
 import ctypes
 
 gauss_library_path = './libgauss.so'
@@ -16,7 +5,7 @@ gauss_library_path = './libgauss.so'
 def unpack(A):
     """ Extract L and U parts from A, fill with 0's and 1's """
     n = len(A)
-    L = [[A[i][j] for j in range(i)] + [1] + [0 for j in range(i+1, n)]
+    L = [[A[i][j] for j in range(i)] + [1] + [0 for j in range(i + 1, n)]
          for i in range(n)]
 
     U = [[0 for j in range(i)] + [A[i][j] for j in range(i, n)]
@@ -25,24 +14,25 @@ def unpack(A):
     return L, U
 
 def lu_c(A):
-    """ Accepts a list of lists A of floats and
-    it returns (L, U) - the LU-decomposition as a tuple.
-    """
+    """ Accepts a list of lists A of floats and returns (P, L, U) - the PA=LU decomposition as a tuple. """
     # Load the shared library
     lib = ctypes.CDLL(gauss_library_path)
 
-    # Create a 2D array in Python and flatten it
     n = len(A)
+    # Create a 2D array in Python and flatten it
     flat_array_2d = [item for row in A for item in row]
 
     # Convert to a ctypes array
     c_array_2d = (ctypes.c_double * len(flat_array_2d))(*flat_array_2d)
 
+    # Prepare to retrieve the permutation array
+    P = (ctypes.c_int * n)()
+    
     # Define the function signature
-    lib.lu_in_place.argtypes = (ctypes.c_int, ctypes.POINTER(ctypes.c_double))
+    lib.plu.argtypes = (ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_int))
 
-    # Modify the array in C (e.g., add 10 to each element)
-    lib.lu_in_place(n, c_array_2d)
+    # Call the C function for LU decomposition
+    lib.plu(n, c_array_2d, P)
 
     # Convert back to a 2D Python list of lists
     modified_array_2d = [
@@ -50,22 +40,32 @@ def lu_c(A):
         for i in range(n)
     ]
 
-    # Extract L and U parts from A, fill with 0's and 1's
-    return unpack(modified_array_2d)
+    # Unpack L and U from the modified array
+    L, U = unpack(modified_array_2d)
+
+    # Convert permutation array to a Python list
+    P_list = list(P)
+
+    return P_list, L, U
 
 def lu_python(A):
+    """ Accepts a list of lists A of floats and returns (P, L, U) - the PA=LU decomposition as a tuple. """
     n = len(A)
+    P = list(range(n))  # Initialize the permutation array as an identity permutation
+    
     for k in range(n):
-        for i in range(k,n):
-            for j in range(k):
-                A[k][i] -= A[k][j] * A[j][i]
-        for i in range(k+1, n):
-            for j in range(k):
-                A[i][k] -= A[i][j] * A[j][k]
-            A[i][k] /= A[k][k]
+        # Find the pivot element
+        pivot = max(range(k, n), key=lambda i: abs(A[i][k]))
+        if pivot != k:
+            A[k], A[pivot] = A[pivot], A[k]  # Swap rows in A
+            P[k], P[pivot] = P[pivot], P[k]  # Swap in permutation array
 
-    return unpack(A)
+        for i in range(k + 1, n):
+            A[i][k] /= A[k][k]  # Calculate the multipliers
+            for j in range(k + 1, n):
+                A[i][j] -= A[i][k] * A[k][j]  # Eliminate
 
+    return unpack(A), P
 
 def lu(A, use_c=False):
     if use_c:
@@ -73,10 +73,7 @@ def lu(A, use_c=False):
     else:
         return lu_python(A)
 
-
-
 if __name__ == "__main__":
-
     def get_A():
         """ Make a test matrix """
         A = [[2.0, 3.0, -1.0],
@@ -86,13 +83,17 @@ if __name__ == "__main__":
 
     A = get_A()
 
-    L, U = lu(A, use_c = False)
-    print(L)
-    print(U)
+    P, L, U = lu(A, use_c=False)
+    print("Using Python:")
+    print("P:", P)
+    print("L:", L)
+    print("U:", U)
 
     # Must re-initialize A as it was destroyed
     A = get_A()
 
-    L, U = lu(A, use_c=True)
-    print(L)
-    print(U)
+    P, L, U = lu(A, use_c=True)
+    print("\nUsing C:")
+    print("P:", P)
+    print("L:", L)
+    print("U:", U)
