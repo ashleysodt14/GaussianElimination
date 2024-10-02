@@ -103,31 +103,29 @@ void plu(int n, double A[n][n], int P[n]) {
             }
         }
 
-        // Step 3: Swap rows in A (U matrix)
+        // Step 6: Swap rows in A if needed
         if (pivot_row != k) {
-            swap_rows(&A[0][0], n, k, pivot_row);
-
-            // Step 4: Swap rows in P
-            int temp = P[k];
-            P[k] = P[pivot_row];
-            P[pivot_row] = temp;
-
-            // Step 5: Swap rows in L (lower part of A, before the diagonal)
-            for (int j = 0; j < k; j++) {
-                double temp_L = A[k][j];
-                A[k][j] = A[pivot_row][j];
-                A[pivot_row][j] = temp_L;
+            // Swap rows in A
+            for (int j = 0; j < n; j++) {
+                SWAP(A[k][j], A[pivot_row][j], double);
             }
+
+            // Step 7: Swap rows in P (which tracks row permutations)
+            SWAP(P[k], P[pivot_row], int);
         }
 
-        // Step 6: Eliminate below the pivot in column k
+        // Step 9: Perform elimination for rows below the pivot row
         for (int i = k + 1; i < n; i++) {
-            // Compute the multiplier (stored in L)
-            A[i][k] /= A[k][k];
+            // Step 10: Compute the multiplier (store in A below the diagonal for L)
+            if (A[k][k] != 0) {
+                A[i][k] = A[i][k] / A[k][k];  // Store multiplier in A (L part)
+            } else {
+                A[i][k] = 0; // Avoid division by zero
+            }
 
-            // Update U matrix (the upper part of A)
+            // Step 11-13: Update the matrix A (U part)
             for (int j = k + 1; j < n; j++) {
-                A[i][j] -= A[i][k] * A[k][j];
+                A[i][j] = A[i][j] - A[i][k] * A[k][j];  // Modify A (U part)
             }
         }
     }
