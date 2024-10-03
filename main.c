@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include <math.h>
 #include <string.h>
 #include <assert.h>
@@ -201,8 +202,8 @@ void fpe_handler(int sig) {
 int main()
 {
   // Enable trapping for specific floating-point exceptions
-  //feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-  //sighandler_t old_handler = signal(SIGFPE, fpe_handler);
+  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+  sighandler_t old_handler = signal(SIGFPE, fpe_handler);
 
   test_gauss_solve();
   test_lu_in_place();
