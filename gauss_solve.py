@@ -2,7 +2,7 @@ import numpy as np
 from ctypes import CDLL, POINTER, c_double, c_int
 
 # Load the C library (ensure you compiled the C code to a shared object)
-lib = CDLL('./plu_decomposition.so')
+lib = CDLL('./libgauss.so')
 
 def plu(A, use_c=True):
     n = len(A)
