@@ -79,3 +79,21 @@ void lu_in_place(int n, double *A) {
     }
 }
 
+// Reconstruct the LU matrix to verify the decomposition
+void lu_in_place_reconstruct(int n, double *A, double *L, double *U) {
+    // Extract L and U from A
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i > j) {
+                L[i * n + j] = A[i * n + j];
+                U[i * n + j] = 0.0;
+            } else if (i == j) {
+                L[i * n + j] = 1.0;
+                U[i * n + j] = A[i * n + j];
+            } else {
+                L[i * n + j] = 0.0;
+                U[i * n + j] = A[i * n + j];
+            }
+        }
+    }
+}
