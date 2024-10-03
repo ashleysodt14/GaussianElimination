@@ -5,28 +5,27 @@
 #include <fenv.h>
 #endif
 
-// Prototype for the floating-point exception handler
+// Floating-point exception handler prototype
 void fpe_handler(int sig);
 
 int main() {
-    // Enable floating-point exceptions on Linux-based systems
+    // Enable floating-point exceptions on Linux
     #ifdef __linux__
     feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
     #endif
 
-    // Set up signal handler for SIGFPE (Floating-point exception)
+    // Set signal handler for SIGFPE
     void (*old_handler)(int) = signal(SIGFPE, fpe_handler);
 
-    // Your main logic here, e.g., test cases or benchmarks
     printf("Starting the main program...\n");
 
-    // Example floating-point exception
-    double x = 1.0 / 0.0;  // Division by zero, just for testing
+    // Example: trigger floating-point exception (division by zero)
+    double x = 1.0 / 0.0;
 
     return 0;
 }
 
-// Example floating-point exception handler
+// Floating-point exception handler function
 void fpe_handler(int sig) {
     printf("Floating-point exception occurred! Signal: %d\n", sig);
 }
