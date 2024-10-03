@@ -1,16 +1,21 @@
 #ifndef GAUSS_SOLVE_H
 #define GAUSS_SOLVE_H
 
-// Function to perform PLU decomposition in-place
-void plu(int n, double *A, int P[n]);
 
-// Helper function to swap rows in a matrix
-void swap_rows(double *A, int n, int P[], int row1, int row2);
+/* An idiomatic way to swap two l-values X and Y of type TYPE in C
+   Example:
+   int x = 1; int y = 2; SWAP(x, y, int);
+   Now x==2 and y==1.
+*/
+#define SWAP(X, Y, TYPE) do {			\
+    TYPE tmp = (X);				\
+    (X) = (Y);					\
+    (Y) = tmp;					\
+  } while(0)
 
-// Helper function to print the matrix (for debugging)
-void print_matrix(int n, double *A);
 
-// Helper function to print the permutation matrix (for debugging)
-void print_permutation(int n, int P[n]);
+void gauss_solve_in_place(const int n, double A[n][n], double b[n]);
+void lu_in_place(const int n, double A[n][n]);
+void lu_in_place_reconstruct(int n, double A[n][n]);
 
 #endif
