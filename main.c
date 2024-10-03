@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <fenv.h>
 #include <setjmp.h>
+#include <Python.h>  // Include Python API
 
 #include "gauss_solve.h"
 #include "helpers.h"
@@ -114,71 +115,6 @@ void test_lu_in_place()
     assert(frobenius_norm_dist(N, A, A0) < eps);
 }
 
-void benchmark_test(int n)
-{
-    /* Allocate matrix on stack */
-    double A0[n][n], A[n][n];
-    generate_random_matrix(n, A0);
-    copy_matrix(n, A0, A);
-
-    lu_in_place(n, A);
-    lu_in_place_reconstruct(n, A);
-
-    double eps = 1e-6;
-    assert(frobenius_norm_dist(n, A0, A) < eps);
-}
-
-void benchmark_test_dynamic(int n)
-{
-    /* Allocate memory */
-    double *store = (double *)malloc(n * n * sizeof(double));
-    double (*A)[n] = (double (*)[n])store;
-    assert(A);
-
-    double *store_copy = (double *)malloc(n * n * sizeof(double));
-    double (*A_copy)[n] = (double (*)[n])store_copy;
-    assert(A_copy);
-
-    generate_random_matrix(n, A);
-    copy_matrix(n, A, A_copy);
-
-    puts("Random matrix A:\n");
-    print_matrix(n, A, FLAG_WHOLE);
-
-    lu_in_place(n, A);
-    lu_in_place_reconstruct(n, A);
-
-    double eps = 1e-6;
-    assert(frobenius_norm_dist(n, A_copy, A) < eps);
-
-    /* Ensure memory is deallocated */
-    free(store);
-    free(store_copy);
-}
-
-void benchmark_test_dynamic_alt(int n)
-{
-    /* Allocate memory */
-    double (*A)[n] = NULL, (*A_copy)[n] = NULL;
-    create_matrix(n, &A);
-    assert(A);
-    create_matrix(n, &A_copy);  
-    assert(A_copy);
-
-    generate_random_matrix(n, A);
-    copy_matrix(n, A, A_copy);
-
-    lu_in_place(n, A);
-    lu_in_place_reconstruct(n, A);
-
-    double eps = 1e-4, dist = frobenius_norm_dist(n, A_copy, A);
-    assert(dist < eps);
-
-    /* Ensure memory is deallocated */
-    destroy_matrix(n, A);
-    destroy_matrix(n, A_copy);
-}
-
 void fpe_handler(int sig) {
     printf("Entering %s...\n", __func__);
     if(sig == SIGFPE) {
@@ -188,80 +124,51 @@ void fpe_handler(int sig) {
 }
 
 int main() {
-    int n = 3;
-    double A[n][n]; // Declare the variable-length array
+    // Initialize the Python interpreter
+    Py_Initialize();
 
-    // Initialize it manually with specific values
-    double tempA[3][3] = {
-        {2, 3, -1},
-        {4, 1, 2},
-        {-2, 7, 2}
-    };
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            A[i][j] = tempA[i][j]; // Use a temporary array to initialize
-        }
-    }
+    // Set the path to find your Python modules if needed
+    PyRun_SimpleString("import sys; sys.path.append('.')");
 
-    int P[N]; // Use defined size for permutation array
+    // Import the Python module and function
+    PyObject *pName = PyUnicode_DecodeFSDefault("python_module");  // Replace "python_module" with your module name
+    PyObject *pModule = PyImport_Import(pName);
+    Py_XDECREF(pName);
 
-    plu(n, A, P); // Call the PLU function
+    if (pModule != NULL) {
+        // Get the function from the module
+        PyObject *pFunc = PyObject_GetAttrString(pModule, "python_function");  // Replace "python_function" with your function name
+        
+        if (PyCallable_Check(pFunc)) {
+            // Prepare arguments to pass to the Python function
+            PyObject *pArgs = PyTuple_New(1);  // For example, a single argument
+            PyObject *pValue = PyLong_FromLong(10);  // Example argument
+            PyTuple_SetItem(pArgs, 0, pValue);
 
-    printf("PLU Decomposition:\n");
-    printf("L:\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (i < j) {
-                printf("0 ");
-            } else if (i == j) {
-                printf("1 ");
+            // Call the Python function
+            PyObject *pResult = PyObject_CallObject(pFunc, pArgs);
+
+            // Check the result and handle it (assuming the function returns an integer)
+            if (pResult != NULL) {
+                printf("Result from Python: %ld\n", PyLong_AsLong(pResult));
+                Py_XDECREF(pResult);
             } else {
-                printf("%lf ", A[i][j]);
+                PyErr_Print();
             }
+
+            Py_XDECREF(pArgs);
+        } else {
+            PyErr_Print();
         }
-        printf("\n");
+
+        Py_XDECREF(pFunc);
+        Py_XDECREF(pModule);
+    } else {
+        PyErr_Print();
     }
 
-    printf("\nU:\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (i <= j) {
-                printf("%lf ", A[i][j]);
-            } else {
-                printf("0 ");
-            }
-        }
-        printf("\n");
-    }
-
-    printf("\nPermutation:\n");
-    for (int i = 0; i < n; i++) {
-        printf("%d ", P[i]);
-    }
-    printf("\n");
+    // Finalize the Python interpreter
+    Py_Finalize();
 
     return 0;
-}
-
-void test_plu_decomposition() {
-    printf("Entering function: %s\n", __func__);
-    
-    const int n = 3;
-    double A[n][n]; // Declare the variable-length array
-
-    // Initialize the array using loops
-    double temp[3][3] = {
-        {4, 3, 2},
-        {2, 1, 1},
-        {3, 2, 1}
-    };
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            A[i][j] = temp[i][j]; // Copy values from temp array
-        }
-    }
-
-    int P[n];
-    // ... rest of the code
 }
