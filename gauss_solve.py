@@ -1,76 +1,98 @@
-import numpy as np
-from ctypes import CDLL, POINTER, c_int, c_double
+#----------------------------------------------------------------
+# File:     gauss_solve.py
+#----------------------------------------------------------------
+#
+# Author:   Marek Rychlik (rychlik@arizona.edu)
+# Date:     Thu Sep 26 10:38:32 2024
+# Copying:  (C) Marek Rychlik, 2020. All rights reserved.
+# 
+#----------------------------------------------------------------
+# A Python wrapper module around the C library libgauss.so
 
-# Load the C library (make sure this path points to the correct shared library file)
-lib = CDLL('./plu_decomposition.so')
+import ctypes
 
-def plu(A, use_c=False):
+gauss_library_path = './libgauss.so'
+
+def unpack(A):
+    """ Extract L and U parts from A, fill with 0's and 1's """
     n = len(A)
-    
+    L = [[A[i][j] for j in range(i)] + [1] + [0 for j in range(i+1, n)]
+         for i in range(n)]
+
+    U = [[0 for j in range(i)] + [A[i][j] for j in range(i, n)]
+         for i in range(n)]
+
+    return L, U
+
+def lu_c(A):
+    """ Accepts a list of lists A of floats and
+    it returns (L, U) - the LU-decomposition as a tuple.
+    """
+    # Load the shared library
+    lib = ctypes.CDLL(gauss_library_path)
+
+    # Create a 2D array in Python and flatten it
+    n = len(A)
+    flat_array_2d = [item for row in A for item in row]
+
+    # Convert to a ctypes array
+    c_array_2d = (ctypes.c_double * len(flat_array_2d))(*flat_array_2d)
+
+    # Define the function signature
+    lib.lu_in_place.argtypes = (ctypes.c_int, ctypes.POINTER(ctypes.c_double))
+
+    # Modify the array in C (e.g., add 10 to each element)
+    lib.lu_in_place(n, c_array_2d)
+
+    # Convert back to a 2D Python list of lists
+    modified_array_2d = [
+        [c_array_2d[i * n + j] for j in range(n)]
+        for i in range(n)
+    ]
+
+    # Extract L and U parts from A, fill with 0's and 1's
+    return unpack(modified_array_2d)
+
+def lu_python(A):
+    n = len(A)
+    for k in range(n):
+        for i in range(k,n):
+            for j in range(k):
+                A[k][i] -= A[k][j] * A[j][i]
+        for i in range(k+1, n):
+            for j in range(k):
+                A[i][k] -= A[i][j] * A[j][k]
+            A[i][k] /= A[k][k]
+
+    return unpack(A)
+
+
+def lu(A, use_c=False):
     if use_c:
-        # Call C implementation
-        A_c = (c_double * (n * n))()  # Create a 1D array for C
-        P_c = (c_int * n)()  # Permutation array
-        
-        # Populate the C array
-        for i in range(n):
-            for j in range(n):
-                A_c[i * n + j] = A[i][j]
-        
-        # Call the C function (make sure C function signature matches)
-        lib.plu(c_int(n), A_c, P_c)
-        
-        # Extract the results from the C array
-        P = [P_c[i] for i in range(n)]
-        L = np.zeros((n, n))
-        U = np.zeros((n, n))
-        
-        for i in range(n):
-            for j in range(n):
-                if i > j:
-                    L[i][j] = A_c[i * n + j]
-                elif i == j:
-                    L[i][j] = 1
-                    U[i][j] = A_c[i * n + j]
-                else:
-                    U[i][j] = A_c[i * n + j]
-        
-        return P, L, U
-    
+        return lu_c(A)
     else:
-        # Python-based PA=LU decomposition
-        A = np.array(A, dtype=float)
-        P = np.arange(n)
-        L = np.zeros((n, n))
-        U = np.copy(A)
+        return lu_python(A)
 
-        for k in range(n):
-            # Pivot
-            max_index = np.argmax(np.abs(U[k:, k])) + k
-            if max_index != k:
-                U[[k, max_index]] = U[[max_index, k]]
-                P[[k, max_index]] = P[[max_index, k]]
 
-            for i in range(k + 1, n):
-                L[i, k] = U[i, k] / U[k, k]
-                U[i, k:] -= L[i, k] * U[k, k:]
 
-        np.fill_diagonal(L, 1)
-        return P.tolist(), L, U
-
-# Example usage
 if __name__ == "__main__":
-    A = [[2.0, 3.0, -1.0], [4.0, 1.0, 2.0], [-2.0, 7.0, 2.0]]
-    use_c = False
-    P, L, U = plu(A, use_c=use_c)
-    print("Python-based PLU Decomposition:")
-    print("P:", P)
-    print("L:", L)
-    print("U:", U)
-    
-    use_c = True
-    P, L, U = plu(A, use_c=use_c)
-    print("C-based PLU Decomposition:")
-    print("P:", P)
-    print("L:", L)
-    print("U:", U)
+
+    def get_A():
+        """ Make a test matrix """
+        A = [[2.0, 3.0, -1.0],
+             [4.0, 1.0, 2.0],
+             [-2.0, 7.0, 2.0]]
+        return A
+
+    A = get_A()
+
+    L, U = lu(A, use_c = False)
+    print(L)
+    print(U)
+
+    # Must re-initialize A as it was destroyed
+    A = get_A()
+
+    L, U = lu(A, use_c=True)
+    print(L)
+    print(U)
