@@ -36,7 +36,7 @@ def lu_python_decomposition(A):
             A[i][k] /= A[k][k]
     return extract_lu(A)
 
-def perform_lu(A, use_c=False):
+def lu(A, use_c=False):
     """ Chooses between Python and C implementation of LU decomposition. """
     if use_c:
         return lu_c_decomposition(A)
@@ -87,7 +87,7 @@ def plu_c_decomposition(A):
     permutation_vector = [int(c_P[i]) for i in range(n)]
     return permutation_vector, *extract_lu(new_A)
 
-def perform_plu(A, use_c=False):
+def plu(A, use_c=False):
     """ Chooses between Python and C implementation of PLU decomposition. """
     if use_c:
         return plu_c_decomposition(A)
