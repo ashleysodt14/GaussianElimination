@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <signal.h>
+
+#ifdef __linux__
 #include <fenv.h>
+#endif
 
 // Prototype for the floating-point exception handler
 void fpe_handler(int sig);
