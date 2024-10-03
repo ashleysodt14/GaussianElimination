@@ -1,68 +1,65 @@
-/*----------------------------------------------------------------
-* File:     gauss_solve.c
-*----------------------------------------------------------------
-*
-* Author:   Marek Rychlik (rychlik@arizona.edu)
-* Date:     Sun Sep 22 15:40:29 2024
-* Copying:  (C) Marek Rychlik, 2020. All rights reserved.
-*
-*----------------------------------------------------------------*/
-#include "gauss_solve.h"
+#include <stdio.h>
+#include <math.h>
 
-void gauss_solve_in_place(const int n, double A[n][n], double b[n])
-{
-  for(int k = 0; k < n; ++k) {
-    for(int i = k+1; i < n; ++i) {
-      /* Store the multiplier into A[i][k] as it would become 0 and be
-	 useless */
-      A[i][k] /= A[k][k];
-      for( int j = k+1; j < n; ++j) {
-	A[i][j] -= A[i][k] * A[k][j];
-      }
-      b[i] -= A[i][k] * b[k];
+void swap_rows(double A[][n], int P[], int row1, int row2, int n) {
+    for (int i = 0; i < n; i++) {
+        double temp = A[row1][i];
+        A[row1][i] = A[row2][i];
+        A[row2][i] = temp;
     }
-  } /* End of Gaussian elimination, start back-substitution. */
-  for(int i = n-1; i >= 0; --i) {
-    for(int j = i+1; j<n; ++j) {
-      b[i] -= A[i][j] * b[j];
-    }
-    b[i] /= A[i][i];
-  } /* End of back-substitution. */
+    int tempP = P[row1];
+    P[row1] = P[row2];
+    P[row2] = tempP;
 }
 
-void lu_in_place(const int n, double A[n][n])
-{
-  for(int k = 0; k < n; ++k) {
-    for(int i = k; i < n; ++i) {
-      for(int j=0; j<k; ++j) {
-	/* U[k][i] -= L[k][j] * U[j][i] */
-	A[k][i] -=  A[k][j] * A[j][i]; 
-      }
+void plu(int n, double A[n][n], int P[n]) {
+    // Initialize permutation matrix P to the identity matrix
+    for (int i = 0; i < n; i++) {
+        P[i] = i;
     }
-    for(int i = k+1; i<n; ++i) {
-      for(int j=0; j<k; ++j) {
-	/* L[i][k] -= A[i][k] * U[j][k] */
-	A[i][k] -= A[i][j]*A[j][k]; 
-      }
-      /* L[k][k] /= U[k][k] */
-      A[i][k] /= A[k][k];	
+
+    for (int k = 0; k < n; k++) {
+        // Find the pivot element
+        int maxIndex = k;
+        for (int i = k + 1; i < n; i++) {
+            if (fabs(A[i][k]) > fabs(A[maxIndex][k])) {
+                maxIndex = i;
+            }
+        }
+
+        // Swap rows in U and P if necessary
+        if (maxIndex != k) {
+            swap_rows(A, P, k, maxIndex, n);
+        }
+
+        // Perform the elimination process
+        for (int i = k + 1; i < n; i++) {
+            // Compute the multiplier and store it in the lower triangular part of A
+            A[i][k] /= A[k][k];
+
+            // Update U (upper triangular part of A)
+            for (int j = k + 1; j < n; j++) {
+                A[i][j] -= A[i][k] * A[k][j];
+            }
+        }
     }
-  }
+
+    // At this point, A contains both L (in the lower part) and U (in the upper part)
 }
 
-void lu_in_place_reconstruct(int n, double A[n][n])
-{
-  for(int k = n-1; k >= 0; --k) {
-    for(int i = k+1; i<n; ++i) {
-      A[i][k] *= A[k][k];
-      for(int j=0; j<k; ++j) {
-	A[i][k] += A[i][j]*A[j][k];
-      }
+// Helper function to print a matrix
+void print_matrix(int n, double A[n][n]) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            printf("%f ", A[i][j]);
+        }
+        printf("\n");
     }
-    for(int i = k; i < n; ++i) {
-      for(int j=0; j<k; ++j) {
-	A[k][i] +=  A[k][j] * A[j][i];
-      }
+}
+
+void print_permutation(int n, int P[]) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", P[i]);
     }
-  }
+    printf("\n");
 }
