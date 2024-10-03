@@ -1,57 +1,57 @@
-#include "gauss_solve.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>  // Include math.h for fabs function
-#include <Python.h>  // Include Python API
+#include <math.h>
+
+void swap_rows(double A[][n], int P[], int row1, int row2, int n) {
+    for (int i = 0; i < n; i++) {
+        double temp = A[row1][i];
+        A[row1][i] = A[row2][i];
+        A[row2][i] = temp;
+    }
+    int tempP = P[row1];
+    P[row1] = P[row2];
+    P[row2] = tempP;
+}
 
 void plu(int n, double A[n][n], int P[n]) {
-    double L[n][n];  // Temporary lower triangular matrix
-    double U[n][n];  // Temporary upper triangular matrix
-
-    // Initialize P with the identity permutation
     for (int i = 0; i < n; i++) {
-        P[i] = i;
+        P[i] = i; // Initialize the permutation matrix
     }
 
-    // LU decomposition with partial pivoting
     for (int k = 0; k < n; k++) {
-        // Find the pivot
-        double max = fabs(A[k][k]);
+        // Pivot
         int maxIndex = k;
         for (int i = k + 1; i < n; i++) {
-            if (fabs(A[i][k]) > max) {
-                max = fabs(A[i][k]);
+            if (fabs(A[i][k]) > fabs(A[maxIndex][k])) {
                 maxIndex = i;
             }
         }
 
-        // Swap rows in A and update the permutation
         if (maxIndex != k) {
-            for (int j = 0; j < n; j++) {
-                double temp = A[k][j];
-                A[k][j] = A[maxIndex][j];
-                A[maxIndex][j] = temp;
-            }
-
-            // Swap the permutation
-            int temp = P[k];
-            P[k] = P[maxIndex];
-            P[maxIndex] = temp;
+            swap_rows(A, P, k, maxIndex, n);
         }
 
-        // Decompose into L and U
-        for (int i = k; i < n; i++) {
-            U[k][i] = A[k][i];  // Upper triangular part
-        }
+        // Elimination
         for (int i = k + 1; i < n; i++) {
-            L[i][k] = A[i][k] / U[k][k];  // Lower triangular part
-            for (int j = k; j < n; j++) {
-                A[i][j] -= L[i][k] * U[k][j];
+            A[i][k] /= A[k][k];
+            for (int j = k + 1; j < n; j++) {
+                A[i][j] -= A[i][k] * A[k][j];
             }
         }
     }
+}
 
-    // Copy U and L to the appropriate positions in A
+void print_matrix(int n, double A[n][n]) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            if
+            printf("%f ", A[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void print_permutation(int n, int P[n]) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", P[i]);
+    }
+    printf("\n");
+}
