@@ -1,19 +1,20 @@
 CFLAGS+=-g -ggdb3
-CFLAGS+= -O5
+CFLAGS+=-O5
+CFLAGS+=-fPIC    # Add -fPIC here
 LDFLAGS=-lm
-PYTHON=python			#Name of Python executable
+PYTHON=python    # Name of Python executable
 
 all: gauss_solve libgauss.so
 
 OBJS = gauss_solve.o main.o helpers.o
-gauss_solve.o : gauss_solve.h
+gauss_solve.o: gauss_solve.h
 helpers.o: helpers.h
 
-gauss_solve : $(OBJS)
+gauss_solve: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LDFLAGS)
 
 libgauss.so: $(OBJS)
-	$(CC) -shared $(OBJS) -I/usr/include/python3.12 -o $@ -fPIC
+	$(CC) -shared $(OBJS) -I/usr/include/python3.12 -o $@ $(LDFLAGS)
 
 check: check_gauss_solve check_ctype_wrapper
 
