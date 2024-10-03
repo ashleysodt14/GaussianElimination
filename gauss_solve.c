@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 
-void swap_rows(double A[][n], int P[], int row1, int row2, int n) {
+// Updated swap_rows function to accept n explicitly
+void swap_rows(double A[][n], int n, int P[], int row1, int row2) {
     for (int i = 0; i < n; i++) {
         double temp = A[row1][i];
         A[row1][i] = A[row2][i];
@@ -12,9 +13,10 @@ void swap_rows(double A[][n], int P[], int row1, int row2, int n) {
     P[row2] = tempP;
 }
 
+// PLU decomposition function
 void plu(int n, double A[n][n], int P[n]) {
     for (int i = 0; i < n; i++) {
-        P[i] = i; // Initialize the permutation matrix
+        P[i] = i;  // Initialize the permutation matrix
     }
 
     for (int k = 0; k < n; k++) {
@@ -27,7 +29,7 @@ void plu(int n, double A[n][n], int P[n]) {
         }
 
         if (maxIndex != k) {
-            swap_rows(A, P, k, maxIndex, n);
+            swap_rows(A, n, P, k, maxIndex);  // Pass n explicitly here
         }
 
         // Elimination
@@ -40,6 +42,7 @@ void plu(int n, double A[n][n], int P[n]) {
     }
 }
 
+// Helper function to print matrix
 void print_matrix(int n, double A[n][n]) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -49,6 +52,7 @@ void print_matrix(int n, double A[n][n]) {
     }
 }
 
+// Helper function to print the permutation matrix
 void print_permutation(int n, int P[n]) {
     for (int i = 0; i < n; i++) {
         printf("%d ", P[i]);
