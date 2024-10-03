@@ -1,6 +1,8 @@
 #ifndef GAUSS_SOLVE_H
 #define GAUSS_SOLVE_H
 
+#include <Python.h>  // Include Python API
+
 void gauss_solve_in_place(const int n, double A[n][n], double b[n]);
 void lu_in_place(const int n, double A[n][n]);
 void lu_in_place_reconstruct(int n, double A[n][n]);
