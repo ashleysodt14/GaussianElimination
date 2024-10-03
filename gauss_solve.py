@@ -9,18 +9,14 @@ def lu(A, use_c=True):
     n = len(A)
 
     if use_c:
-        # Convert Python arrays to C-compatible format
         A_c = (c_double * (n * n))()
 
-        # Flatten and populate the A matrix for C
         for i in range(n):
             for j in range(n):
                 A_c[i * n + j] = A[i][j]
 
-        # Call the C function lu_in_place (assuming it’s defined in C)
         lib.lu_in_place(c_int(n), A_c)
 
-        # Convert C output back to Python
         L = np.zeros((n, n))
         U = np.zeros((n, n))
 
@@ -36,7 +32,6 @@ def lu(A, use_c=True):
 
         return L, U
     else:
-        # Python fallback
         A = np.array(A, dtype=float)
         L = np.zeros((n, n))
         U = np.copy(A)
@@ -49,34 +44,19 @@ def lu(A, use_c=True):
         np.fill_diagonal(L, 1)
         return L, U
 
-# Example usage of LU:
-A = np.array([[2.0, 3.0, -1.0],
-              [4.0, 1.0, 2.0],
-              [-2.0, 7.0, 2.0]])
-
-L, U = lu(A, use_c=True)
-
-print("L:", L)
-print("U:", U)
-
 def plu(A, use_c=True):
     n = len(A)
 
-    # Call C implementation
     if use_c:
-        # Convert Python arrays to C-compatible format
         A_c = (c_double * (n * n))()
         P_c = (c_int * n)()
 
-        # Flatten and populate the A matrix for C
         for i in range(n):
             for j in range(n):
                 A_c[i * n + j] = A[i][j]
 
-        # Call the C function plu
         lib.plu(c_int(n), A_c, P_c)
 
-        # Convert C output back to Python
         P = [P_c[i] for i in range(n)]
         L = np.zeros((n, n))
         U = np.zeros((n, n))
@@ -92,14 +72,21 @@ def plu(A, use_c=True):
                     U[i][j] = A_c[i * n + j]
 
         return P, L, U
+    else:
+        A = np.array(A, dtype=float)
+        P = np.arange(n)
+        L = np.zeros((n, n))
+        U = np.copy(A)
 
-# Example usage:
-A = np.array([[2.0, 3.0, -1.0],
-              [4.0, 1.0, 2.0],
-              [-2.0, 7.0, 2.0]])
+        for k in range(n):
+            max_index = np.argmax(np.abs(U[k:, k])) + k
+            if max_index != k:
+                U[[k, max_index]] = U[[max_index, k]]
+                P[[k, max_index]] = P[[max_index, k]]
 
-P, L, U = plu(A, use_c=True)
+            for i in range(k + 1, n):
+                L[i, k] = U[i, k] / U[k, k]
+                U[i, k:] -= L[i, k] * U[k, k:]
 
-print("P:", P)
-print("L:", L)
-print("U:", U)
+        np.fill_diagonal(L, 1)
+        return P.tolist(), L, U
